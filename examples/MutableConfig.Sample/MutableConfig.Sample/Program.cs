@@ -8,18 +8,14 @@ IServiceCollection services = new ServiceCollection();
 /*************************************** Configuration Data Preparation ****************************************************/
 
 const string configFolderName = "Config";
+var basePath = Path.Join(AppContext.BaseDirectory, configFolderName);
+
 var defaultAppSettingsConfig = new AppSettingsConfig {
     AppName = "MutableConfig Sample App", Version = "1.0.0", EnableDebug = true
 };
 var defaultDatabaseConfig = new DatabaseConfig {
-    Host = "localhost",
-    Port = 5432,
-    Username = "username",
-    Password = "password",
-    DatabaseName = "MutableConfig",
-    ConnectionTimeoutSeconds = 30
+    Host = "localhost", Port = 5432
 };
-var basePath = Path.Join(AppContext.BaseDirectory, configFolderName);
 
 /***************************************************************************************************************************/
 
