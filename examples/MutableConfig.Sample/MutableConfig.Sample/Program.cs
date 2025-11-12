@@ -3,8 +3,6 @@ using MutableConfig;
 using MutableConfig.Sample.Models;
 using Newtonsoft.Json;
 
-IServiceCollection services = new ServiceCollection();
-
 /*************************************** Configuration Data Preparation ****************************************************/
 
 const string configFolderName = "Config";
@@ -34,6 +32,8 @@ if (File.Exists(databaseConfigFilePath))
 /***************************************************************************************************************************/
 
 /******************************************** Dependency Injection *********************************************************/
+
+IServiceCollection services = new ServiceCollection();
 
 services.AddConfigContext<AppSettingsConfig>(opt =>
     opt.SetBasePath(basePath)
