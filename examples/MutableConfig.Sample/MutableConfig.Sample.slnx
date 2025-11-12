@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="../../src/MutableConfig/MutableConfig/MutableConfig.csproj" />
+  <Project Path="MutableConfig.Sample/MutableConfig.Sample.csproj" />
+</Solution>
