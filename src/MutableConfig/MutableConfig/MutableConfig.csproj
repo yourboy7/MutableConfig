@@ -2,12 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>1.0.0</Version>
+    <Version>1.0.2</Version>
     <Authors>yourboy77</Authors>
     <Company>Freedom</Company>
+	<Copyright>Copyright © 2025 Freedom</Copyright>
+	<Description>MutableConfig is a lightweight .NET/C# library for runtime configuration management. It provides type-safe mapping of C# classes to JSON files, enabling dynamic updates, hierarchical organization, and persistence without app restarts.</Description>
+	<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 	<RepositoryUrl>https://github.com/yourboy7/MutableConfig</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>
-	<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
 	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
@@ -16,4 +19,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
 
+  <ItemGroup>
+	<None Include="..\..\..\README.md" Pack="true" PackagePath="\"/>
+  </ItemGroup>
 </Project>
