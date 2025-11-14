@@ -4,38 +4,69 @@ using System.IO;
 
 namespace MutableConfig {
     public class ConfigContextOptions<T> where T : class, new() {
-        public string BasePath { get; private set; } = AppContext.BaseDirectory;
-        public T DefaultConfig { get; private set; } = new T();
+        private GenerationStrategy? _generationStrategy;
+
+        public string FolderPath { get; private set; } = AppContext.BaseDirectory;
+        public T ConfigObject { get; private set; } = new T();
         public IConfigSerializer Serializer { get; private set; } = new JsonConfigSerializer();
 
-        public ConfigContextOptions<T> SetBasePath(string path) {
-            BasePath = path;
-            return this;
-        }
-
         public ConfigContextOptions<T> SetupDefaultConfigIfNotExists(
-            T defaultConfig) {
-            DefaultConfig = defaultConfig;
+            T defaultConfig, string folderPath) {
+            _generationStrategy = GenerationStrategy.CodeFirst;
+
+            if (!Directory.Exists(folderPath))  
+                Directory.CreateDirectory(folderPath);
+            var configFilePath =    
+                Path.Combine(folderPath, $"{typeof(T).Name}.{(Serializer is JsonConfigSerializer ? "json" : "xml")}");
+            if (!File.Exists(configFilePath)) {
+                var fileStream = new FileStream(configFilePath, FileMode.Create,
+                    FileAccess.ReadWrite);
+                fileStream.Close();
+                File.WriteAllText(configFilePath,
+                    Serializer.SerializeObject(defaultConfig));
+                ConfigObject = defaultConfig;
+            } else {
+                ConfigObject =
+                    Serializer.DeserializeObject<T>(
+                        File.ReadAllText(configFilePath));
+            }
+
+            FolderPath = folderPath;
             return this;
         }
 
-        public ConfigContextOptions<T> LoadConfigFromFile(string filePath) {    
-            var isJsonFile = Path.GetExtension(filePath) == ".json";
+        public ConfigContextOptions<T> LoadConfigFromFile(string filePath) {
+            _generationStrategy = GenerationStrategy.FileFirst;
+            var isJsonFile = Path.GetExtension(filePath).ToLowerInvariant() == ".json";
             var text = File.ReadAllText(filePath);
-            var serializer = isJsonFile ? (IConfigSerializer)new JsonConfigSerializer() : new XmlConfigSerializer();
-            DefaultConfig = serializer.DeserializeObject<T>(text);
+            Serializer = isJsonFile ? (IConfigSerializer)new JsonConfigSerializer() : new XmlConfigSerializer();
+            ConfigObject = Serializer.DeserializeObject<T>(text);
+            FolderPath = filePath;
             return this;
         }
 
-        public ConfigContextOptions<T> UseJson()
-            => UseSerializer(new JsonConfigSerializer());
+        public ConfigContextOptions<T> UseJson() {
+            if (_generationStrategy != null)
+                throw new Exception(
+                    "Please adjust the call order of the UseJson() method to be earlier.");
+            return UseSerializer(new JsonConfigSerializer());
+        }
 
-        public ConfigContextOptions<T> UseXml()
-            => UseSerializer(new XmlConfigSerializer());
+        public ConfigContextOptions<T> UseXml() {
+            if (_generationStrategy != null)
+                throw new Exception(
+                    "Please adjust the call order of the UseXml() method to be earlier.");
+            return UseSerializer(new XmlConfigSerializer());
+        }
 
         private ConfigContextOptions<T> UseSerializer(IConfigSerializer serializer) {
             Serializer = serializer;
             return this;
         }
+    }
+
+    public enum GenerationStrategy {
+        CodeFirst,
+        FileFirst
     }
 }

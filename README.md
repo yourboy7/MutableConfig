@@ -47,9 +47,13 @@ using MutableConfig;
 ```
 
 ```c#
-// Configuration Data Preparation
+/* 
+ * Step 1: Data Preparation
+ */
+
+// Data Preparation Case 1：C# Object => Configuration File
 const string configFolderName = "Config";
-var basePath = Path.Join(AppContext.BaseDirectory, configFolderName);
+var configFolderPath = Path.Join(AppContext.BaseDirectory, configFolderName);
 
 var defaultAppSettingsConfig = new AppSettingsConfig {
     AppName = "MutableConfig Sample App", Version = "1.0.0", EnableDebug = true
@@ -58,12 +62,15 @@ var defaultDatabaseConfig = new DatabaseConfig {
     Host = "localhost", Port = 5432
 };
 
+// Data Preparation Case 2：Configuration File => C# Object 
+const string configFilePath = @"C:\Users\Username\myapp\config.json";
+
 /*
- * Dependency Injection Examples
+ * Step 2: Dependency Injection Examples
  *
  * AppSettingsConfig is a custom configuration class.
  * Once registered through dependency injection, MutableConfig will ensure that
- * an "AppSettingsConfig.json" or "AppSettingsConfig.xml" file exists under the specified basePath.
+ * an "AppSettingsConfig.json" or "AppSettingsConfig.xml" file exists under the specified configFolderPath.
  *
  * On the first run, if the configuration file does not exist, it will be created
  * using the default values provided through SetupDefaultConfigIfNotExists().
@@ -73,22 +80,31 @@ var defaultDatabaseConfig = new DatabaseConfig {
  * to the underlying JSON or XML file, you explicitly call SaveChanges() on the context.
  */
 
+/*
+ * Dependency Injection Case 1: C# Object => Configuration File
+ */
+
 // Default Generate JSON Configuration Files
 builder.Services.AddConfigContext<AppSettingsConfig>(opt =>
-    opt.SetBasePath(basePath)
-        .SetupDefaultConfigIfNotExists(defaultAppSettingsConfig));
+    opt.SetupDefaultConfigIfNotExists(defaultAppSettingsConfig, configFolderPath));
 
 // Generate JSON Configuration Files
 builder.Services.AddConfigContext<AppSettingsConfig>(opt =>
-    opt.SetBasePath(basePath)
-        .UseJson()
-        .SetupDefaultConfigIfNotExists(defaultAppSettingsConfig));
+    opt.UseJson()
+        .SetupDefaultConfigIfNotExists(defaultAppSettingsConfig, configFolderPath));
 
 // Generate XML Configuration Files
 builder.Services.AddConfigContext<AppSettingsConfig>(opt =>
-    opt.SetBasePath(basePath)
-        .UseXml()
-        .SetupDefaultConfigIfNotExists(defaultAppSettingsConfig));
+    opt.UseXml()
+        .SetupDefaultConfigIfNotExists(defaultAppSettingsConfig, configFolderPath));
+
+/*
+ * Dependency Injection Case 2: Configuration File => C# Object
+ */
+
+// Automatically identifies whether the configuration file is JSON or XML.
+builder.Services.AddConfigContext<AppSettingsConfig>(opt =>
+    opt.LoadConfigFromFile(configFilePath));
 ```
 
 # Example

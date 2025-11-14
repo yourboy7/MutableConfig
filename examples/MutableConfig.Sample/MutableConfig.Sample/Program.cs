@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 /*************************************** Configuration Data Preparation ****************************************************/
 
 const string configFolderName = "Config";
-var basePath = Path.Join(AppContext.BaseDirectory, configFolderName);
+var configFolderPath = Path.Join(AppContext.BaseDirectory, configFolderName);
 
 var defaultAppSettingsConfig = new AppSettingsConfig {
     AppName = "MutableConfig Sample App", Version = "1.0.0", EnableDebug = true
@@ -21,9 +21,9 @@ var defaultDatabaseConfig = new DatabaseConfig {
 // Warning: The cleanup is done to ensure a consistent environment for each run of the example program, but you don’t need to do this when using ConfigContext.
 
 var appSettingsConfigFilePath =
-    Path.Combine(basePath, $"{nameof(AppSettingsConfig)}.json");
+    Path.Combine(configFolderPath, $"{nameof(AppSettingsConfig)}.json");
 var databaseConfigFilePath =
-    Path.Combine(basePath, $"{nameof(DatabaseConfig)}.json");
+    Path.Combine(configFolderPath, $"{nameof(DatabaseConfig)}.json");
 if (File.Exists(appSettingsConfigFilePath))
     File.Delete(appSettingsConfigFilePath);
 if (File.Exists(databaseConfigFilePath))
@@ -36,11 +36,9 @@ if (File.Exists(databaseConfigFilePath))
 IServiceCollection services = new ServiceCollection();
 
 services.AddConfigContext<AppSettingsConfig>(opt =>
-    opt.SetBasePath(basePath)
-        .SetupDefaultConfigIfNotExists(defaultAppSettingsConfig));
+    opt.SetupDefaultConfigIfNotExists(defaultAppSettingsConfig, configFolderPath));
 services.AddConfigContext<DatabaseConfig>(opt =>
-    opt.SetBasePath(basePath)
-        .SetupDefaultConfigIfNotExists(defaultDatabaseConfig));
+    opt.SetupDefaultConfigIfNotExists(defaultDatabaseConfig, configFolderPath));
 
 IServiceProvider serviceProvider = services.BuildServiceProvider();
 
