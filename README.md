@@ -2,7 +2,7 @@
 
 [![NuGet version](https://img.shields.io/nuget/v/MutableConfig.svg)](https://www.nuget.org/packages/MutableConfig)[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)[![NuGet downloads](https://img.shields.io/nuget/dt/MutableConfig.svg)](https://www.nuget.org/packages/MutableConfig)[![GitHub stars](https://img.shields.io/github/stars/yourboy7/MutableConfig?style=social)](https://github.com/yourboy7/MutableConfig)
 
-A lightweight and extensible .NET/C# library for runtime configuration management, supporting type-safe mapping of C# classes to JSON files.
+A lightweight and extensible .NET/C# library for runtime configuration management, supporting type-safe mapping of C# classes to JSON or XML files.
 
 # About
 
@@ -12,7 +12,7 @@ Common use cases include:
 
 - 🔄 **Runtime Configuration Updates:** When you have an application and need to change certain configuration items during runtime without stopping the application.
 
-- 🧩 **C# to JSON Mapping:** Map C# types to JSON files one by one, enabling strong-typed configuration access.
+- 🧩 **C# to JSON or XML Mapping:** Map C# types to JSON or XML files one by one, enabling strong-typed configuration access.
 
 - 🌐 **Centralized Multi-Module Management:** Want to centrally manage configurations across multiple modules/environments and support features like hot updates.
 
@@ -24,9 +24,9 @@ Here are some of the key features of this library:
 
 - 🧩 **Configuration File Hierarchy and Typed Access:**
 
-  - Maps C# classes to JSON files one-to-one, providing strong-typed access.
+  - Maps C# classes to JSON or XML files one-to-one, providing strong-typed access.
   - Configuration fields can be read and modified like regular C# objects.
-  - Changes are persisted to the JSON file explicitly via the `SaveChanges()` method, keeping the file hierarchy consistent with the type definitions.
+  - Changes are persisted to the JSON or XML file explicitly via the `SaveChanges()` method, keeping the file hierarchy consistent with the type definitions.
 
 - 💾 **Persistence and Recovery Mechanism:** Configuration changes can be saved persistently, allowing the previous state to be restored on the next startup.
 
@@ -59,21 +59,35 @@ var defaultDatabaseConfig = new DatabaseConfig {
 };
 
 /*
- * Dependency Injection
+ * Dependency Injection Examples
  *
  * AppSettingsConfig is a custom configuration class.
  * Once registered through dependency injection, MutableConfig will ensure that
- * an "AppSettingsConfig.json" file exists under the specified basePath.
+ * an "AppSettingsConfig.json" or "AppSettingsConfig.xml" file exists under the specified basePath.
  *
  * On the first run, if the configuration file does not exist, it will be created
  * using the default values provided through SetupDefaultConfigIfNotExists().
  *
  * Configuration objects are fully mutable at runtime, and changes made to them
  * are tracked within their corresponding ConfigContext<T>. To persist updates
- * to the underlying JSON file, you explicitly call SaveChanges() on the context.
+ * to the underlying JSON or XML file, you explicitly call SaveChanges() on the context.
  */
+
+// Default Generate JSON Configuration Files
 builder.Services.AddConfigContext<AppSettingsConfig>(opt =>
     opt.SetBasePath(basePath)
+        .SetupDefaultConfigIfNotExists(defaultAppSettingsConfig));
+
+// Generate JSON Configuration Files
+builder.Services.AddConfigContext<AppSettingsConfig>(opt =>
+    opt.SetBasePath(basePath)
+        .UseJson()
+        .SetupDefaultConfigIfNotExists(defaultAppSettingsConfig));
+
+// Generate XML Configuration Files
+builder.Services.AddConfigContext<AppSettingsConfig>(opt =>
+    opt.SetBasePath(basePath)
+        .UseXml()
         .SetupDefaultConfigIfNotExists(defaultAppSettingsConfig));
 ```
 
