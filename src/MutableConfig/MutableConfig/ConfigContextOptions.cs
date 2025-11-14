@@ -1,5 +1,6 @@
 ﻿using MutableConfig.Serialization;
 using System;
+using System.IO;
 
 namespace MutableConfig {
     public class ConfigContextOptions<T> where T : class, new() {
@@ -15,6 +16,14 @@ namespace MutableConfig {
         public ConfigContextOptions<T> SetupDefaultConfigIfNotExists(
             T defaultConfig) {
             DefaultConfig = defaultConfig;
+            return this;
+        }
+
+        public ConfigContextOptions<T> LoadConfigFromFile(string filePath) {    
+            var isJsonFile = Path.GetExtension(filePath) == ".json";
+            var text = File.ReadAllText(filePath);
+            var serializer = isJsonFile ? (IConfigSerializer)new JsonConfigSerializer() : new XmlConfigSerializer();
+            DefaultConfig = serializer.DeserializeObject<T>(text);
             return this;
         }
 

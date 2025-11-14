@@ -2,11 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
     <Authors>yourboy77</Authors>
     <Company>Freedom</Company>
 	<Copyright>Copyright © 2025 Freedom</Copyright>
-	<Description>MutableConfig is a lightweight .NET/C# library for runtime configuration management. It provides type-safe mapping of C# classes to JSON files, enabling dynamic updates, hierarchical organization, and persistence without app restarts.</Description>
+	<Description>MutableConfig is a lightweight .NET/C# library for runtime configuration management. It provides type-safe mapping of C# classes to JSON or XML files, enabling dynamic updates, hierarchical organization, and persistence without app restarts.</Description>
 	<PackageIcon>icon.png</PackageIcon>
 	<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 	<RepositoryUrl>https://github.com/yourboy7/MutableConfig</RepositoryUrl>
