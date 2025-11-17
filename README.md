@@ -34,78 +34,175 @@ Here are some of the key features of this library:
 
 # How to Use
 
-Installation
+## Installation
 
 ```bash
 dotnet add package MutableConfig
 ```
 
-Add to Program.cs:
+## Step 1 — Prepare Your Configuration Data
+
+You can choose to prepare configuration data in two ways：
+
+**Case 1：Generate configuration files using C# objects**
 
 ```c#
-using MutableConfig;
-```
-
-```c#
-/* 
- * Step 1: Data Preparation
- */
-
-// Data Preparation Case 1：C# Object => Configuration File
 const string configFolderName = "Config";
 var configFolderPath = Path.Join(AppContext.BaseDirectory, configFolderName);
 
 var defaultAppSettingsConfig = new AppSettingsConfig {
-    AppName = "MutableConfig Sample App", Version = "1.0.0", EnableDebug = true
+    AppName = "MutableConfig Sample App",
+    Version = "1.0.0",
+    EnableDebug = true
 };
+
 var defaultDatabaseConfig = new DatabaseConfig {
-    Host = "localhost", Port = 5432
+    Host = "localhost",
+    Port = 5432
 };
 
-// Data Preparation Case 2：Configuration File => C# Object 
+```
+
+**Case 2：Load from existing JSON/XML file**
+
+```c#
 const string configFilePath = @"C:\Users\Username\myapp\config.json";
+```
 
-/*
- * Step 2: Dependency Injection Examples
- *
- * AppSettingsConfig is a custom configuration class.
- * Once registered through dependency injection, MutableConfig will ensure that
- * an "AppSettingsConfig.json" or "AppSettingsConfig.xml" file exists under the specified configFolderPath.
- *
- * On the first run, if the configuration file does not exist, it will be created
- * using the default values provided through SetupDefaultConfigIfNotExists().
- *
- * Configuration objects are fully mutable at runtime, and changes made to them
- * are tracked within their corresponding ConfigContext<T>. To persist updates
- * to the underlying JSON or XML file, you explicitly call SaveChanges() on the context.
- */
+## Step 2 — Register `ConfigContext<T>` in Dependency Injection
 
-/*
- * Dependency Injection Case 1: C# Object => Configuration File
- */
+`MutableConfig` allows you to map **one C# type → one JSON/XML config file**.
 
-// Default Generate JSON Configuration Files
+When running for the first time, if the configuration file does not exist, it will be created using the value from `SetupDefaultConfigIfNotExists()`。
+
+**Case 1：C# Object → Auto-Generate Configuration File**
+
+Default Generate JSON Configuration File
+
+```c#
 builder.Services.AddConfigContext<AppSettingsConfig>(opt =>
     opt.SetupDefaultConfigIfNotExists(defaultAppSettingsConfig, configFolderPath));
+```
 
-// Generate JSON Configuration Files
+Generate JSON Configuration File
+
+```c#
 builder.Services.AddConfigContext<AppSettingsConfig>(opt =>
     opt.UseJson()
         .SetupDefaultConfigIfNotExists(defaultAppSettingsConfig, configFolderPath));
+```
 
-// Generate XML Configuration Files
+Generate XML Configuration File
+
+```c#
 builder.Services.AddConfigContext<AppSettingsConfig>(opt =>
     opt.UseXml()
         .SetupDefaultConfigIfNotExists(defaultAppSettingsConfig, configFolderPath));
+```
 
-/*
- * Dependency Injection Case 2: Configuration File => C# Object
- */
+**Case 2：Existing configuration file → Bind to C# type**
 
-// Automatically identifies whether the configuration file is JSON or XML.
+```c#
 builder.Services.AddConfigContext<AppSettingsConfig>(opt =>
     opt.LoadConfigFromFile(configFilePath));
 ```
+
+## Step 3 — Accessing and Modifying Configuration via Dependency Injection
+
+Once `ConfigContext<T>` is registered, you can inject it _anywhere_ in your application.
+
+Below is a complete example of how to:
+
+- Retrieve `ConfigContext<AppSettingsConfig>` from DI
+- Read configuration values
+- Modify configuration values
+- Persist changes to the JSON/XML file
+
+### Example: Reading and Writing Configuration
+
+```c#
+using Microsoft.Extensions.DependencyInjection;
+using MutableConfig;
+
+var builder = WebApplication.CreateBuilder(args);
+
+/* ------------------------------------------------------------
+ * Step 1: Register ConfigContext in the DI container
+ * ------------------------------------------------------------ */
+builder.Services.AddConfigContext<AppSettingsConfig>(opt =>
+    opt.UseJson()
+        .SetupDefaultConfigIfNotExists(
+            new AppSettingsConfig {
+                AppName = "MutableConfig Sample App",
+                Version = "1.0.0",
+                EnableDebug = true
+            },
+            Path.Combine(AppContext.BaseDirectory, "Config")
+        )
+);
+
+var app = builder.Build();
+
+/* ------------------------------------------------------------
+ * Step 2: Resolve the ConfigContext<AppSettingsConfig>
+ * ------------------------------------------------------------ */
+var configContext = app.Services.GetRequiredService<ConfigContext<AppSettingsConfig>>();
+
+//
+// ---------------------- Reading Config ----------------------
+//
+Console.WriteLine("App Name:       " + configContext.Value.AppName);
+Console.WriteLine("Version:        " + configContext.Value.Version);
+Console.WriteLine("Debug Enabled:  " + configContext.Value.EnableDebug);
+
+//
+// ---------------------- Updating Config ----------------------
+//
+configContext.Value.AppName = "My Updated App";
+configContext.Value.EnableDebug = false;
+
+// Persist changes to AppSettingsConfig.json
+configContext.SaveChanges();
+
+Console.WriteLine("Configuration updated and saved successfully.");
+
+
+
+/* ------------------------------------------------------------
+ * OPTIONAL: Inject into any service or controller
+ * ------------------------------------------------------------
+
+public class MyService
+{
+    private readonly ConfigContext<AppSettingsConfig> _context;
+
+    public MyService(ConfigContext<AppSettingsConfig> context)
+        => _context = context;
+
+    public void PrintConfig()
+        => Console.WriteLine(_context.Value.AppName);
+
+    public void Modify()
+    {
+        _context.Value.EnableDebug = true;
+        _context.SaveChanges();
+    }
+}
+
+------------------------------------------------------------- */
+
+app.Run();
+```
+
+### Summary
+
+With `ConfigContext<T>` you gain:
+
+- **Typed configuration access** — No manual JSON parsing needed
+- **Runtime mutability** — Modify config values while the app is running
+- **Controlled persistence** — Explicit `SaveChanges()` design
+- **Automatic JSON/XML creation** — If missing, files are generated automatically
+- **One C# class = one JSON/XML file** — Clean, maintainable, scalable design
 
 # Example
 
