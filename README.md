@@ -113,7 +113,7 @@ Once `ConfigContext<T>` is registered, you can inject it _anywhere_ in your appl
 
 Below is a complete example of how to:
 
-- Retrieve `ConfigContext<AppSettingsConfig>` from DI
+- Retrieve `ConfigContext<T>` from DI
 - Read configuration values
 - Modify configuration values
 - Persist changes to the JSON/XML file
@@ -127,7 +127,7 @@ using MutableConfig;
 var builder = WebApplication.CreateBuilder(args);
 
 /* ------------------------------------------------------------
- * Step 1: Register ConfigContext in the DI container
+ * Step 1: Register ConfigContext<AppSettingsConfig> in the DI container
  * ------------------------------------------------------------ */
 builder.Services.AddConfigContext<AppSettingsConfig>(opt =>
     opt.UseJson()
