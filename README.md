@@ -198,7 +198,7 @@ app.Run();
 
 With `ConfigContext<T>` you gain:
 
-- **Typed configuration access** — No manual JSON parsing needed
+- **Typed configuration access** — No manual JSON/XML parsing needed
 - **Runtime mutability** — Modify config values while the app is running
 - **Controlled persistence** — Explicit `SaveChanges()` design
 - **Automatic JSON/XML creation** — If missing, files are generated automatically
